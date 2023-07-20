@@ -1,0 +1,37 @@
+{
+  "name": "trading_bot_hardhat",
+  "version": "1.0.0",
+  "description": "",
+  "scripts": {
+    "start": "node bot.js"
+  },
+  "dependencies": {
+    "@nomiclabs/hardhat-waffle": "^2.0.6",
+    "big.js": "^6.2.1",
+    "cors": "^2.8.5",
+    "dotenv": "^16.0.3",
+    "express": "^4.18.2"
+  },
+  "devDependencies": {
+    "@balancer-labs/v2-interfaces": "0.4.0",
+    "@nomicfoundation/hardhat-chai-matchers": "^2.0.1",
+    "@nomicfoundation/hardhat-ethers": "^3.0.3",
+    "@nomicfoundation/hardhat-network-helpers": "^1.0.8",
+    "@nomicfoundation/hardhat-toolbox": "3.0.0",
+    "@nomicfoundation/hardhat-verify": "^1.0.3",
+    "@openzeppelin/contracts": "4.9.1",
+    "@typechain/ethers-v6": "^0.4.0",
+    "@typechain/hardhat": "^8.0.0",
+    "@types/chai": "^4.3.5",
+    "@types/mocha": "^10.0.1",
+    "@uniswap/v2-periphery": "1.1.0-beta.0",
+    "chai": "^4.3.7",
+    "ethers": "^6.6.3",
+    "hardhat": "2.15.0",
+    "hardhat-gas-reporter": "^1.0.9",
+    "solidity-coverage": "^0.8.4",
+    "ts-node": "^10.9.1",
+    "typechain": "^8.2.0",
+    "typescript": "^5.1.6"
+  }
+}
