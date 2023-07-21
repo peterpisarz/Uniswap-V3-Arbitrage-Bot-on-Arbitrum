@@ -13,7 +13,7 @@ async function main() {
     "Arbitrage",
     [
       config.SUSHISWAP.V2_ROUTER_02_ADDRESS,
-      config.UNISWAP.V2_ROUTER_02_ADDRESS
+      config.QUICKSWAP.V2_ROUTER_02_ADDRESS
     ]
   )
 

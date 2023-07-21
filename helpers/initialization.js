@@ -10,12 +10,12 @@ let provider
 if (config.PROJECT_SETTINGS.isLocal) {
   provider = new hre.ethers.WebSocketProvider(`ws://127.0.0.1:8545/`)
 } else {
-  provider = new hre.ethers.WebSocketProvider(`wss://eth-mainnet.g.alchemy.com/v2/${process.env.ALCHEMY_API_KEY}`)
+  provider = new hre.ethers.WebSocketProvider(`wss://polygon-mainnet.g.alchemy.com/v2/${process.env.ALCHEMY_API_POLY}`)
 }
 
 // -- SETUP UNISWAP/SUSHISWAP CONTRACTS -- //
-const uFactory = new hre.ethers.Contract(config.UNISWAP.FACTORY_ADDRESS, IUniswapV2Factory.abi, provider)
-const uRouter = new hre.ethers.Contract(config.UNISWAP.V2_ROUTER_02_ADDRESS, IUniswapV2Router02.abi, provider)
+const uFactory = new hre.ethers.Contract(config.QUICKSWAP.FACTORY_ADDRESS, IUniswapV2Factory.abi, provider)
+const uRouter = new hre.ethers.Contract(config.QUICKSWAP.V2_ROUTER_02_ADDRESS, IUniswapV2Router02.abi, provider)
 const sFactory = new hre.ethers.Contract(config.SUSHISWAP.FACTORY_ADDRESS, IUniswapV2Factory.abi, provider)
 const sRouter = new hre.ethers.Contract(config.SUSHISWAP.V2_ROUTER_02_ADDRESS, IUniswapV2Router02.abi, provider)
 
