@@ -13,7 +13,7 @@ describe("Arbitrage", () => {
       "Arbitrage",
       [
         config.SUSHISWAP.V2_ROUTER_02_ADDRESS,
-        config.UNISWAP.V2_ROUTER_02_ADDRESS
+        config.QUICKSWAP.V2_ROUTER_02_ADDRESS
       ]
     )
 
@@ -26,7 +26,7 @@ describe("Arbitrage", () => {
     })
 
     it("Sets the uRouter", async () => {
-      expect(await arbitrage.uRouter()).to.equal(config.UNISWAP.V2_ROUTER_02_ADDRESS)
+      expect(await arbitrage.uRouter()).to.equal(config.QUICKSWAP.V2_ROUTER_02_ADDRESS)
     })
 
     it("Sets the owner", async () => {

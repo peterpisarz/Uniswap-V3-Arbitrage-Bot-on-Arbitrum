@@ -10,8 +10,8 @@ const { provider, uFactory, uRouter, sFactory, sRouter } = require('../helpers/i
 const V2_FACTORY_TO_USE = uFactory
 const V2_ROUTER_TO_USE = uRouter
 
-const UNLOCKED_ACCOUNT = '0xdEAD000000000000000042069420694206942069' // SHIB account to impersonate 
-const AMOUNT = '40500000000000' // 40,500,000,000,000 SHIB -- Tokens will automatically be converted to wei
+const UNLOCKED_ACCOUNT = '0xD6DF932A45C0f255f85145f286eA0b292B21C90B' // AAVE Account to impersonate
+const AMOUNT = '200000' // 200,000 AAVE (PoS) -- Tokens will automatically be converted to wei
 
 async function main() {
   // Fetch contracts
@@ -33,8 +33,8 @@ async function main() {
   const priceAfter = await calculatePrice(pair)
 
   const data = {
-    'Price Before': `1 WETH = ${Number(priceBefore).toFixed(0)} SHIB`,
-    'Price After': `1 WETH = ${Number(priceAfter).toFixed(0)} SHIB`,
+    'Price Before': `1 WETH = ${Number(priceBefore).toFixed(0)} AAVE`,
+    'Price After': `1 WETH = ${Number(priceAfter).toFixed(0)} AAVE`,
   }
 
   console.table(data)
