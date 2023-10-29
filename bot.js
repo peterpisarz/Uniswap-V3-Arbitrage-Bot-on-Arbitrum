@@ -2,20 +2,21 @@
 require('./helpers/server')
 require("dotenv").config();
 
+const Big = require('big.js')
 const ethers = require("ethers")
 const config = require('./config.json')
-const { getTokenAndContract, getPairContract, getReserves, calculatePrice, simulate } = require('./helpers/helpers')
+const { getTokenAndContract, getPairContract, getReserves, calculatePrice, calculatePriceInv, entropy, simulate } = require('./helpers/helpers')
 const { provider, uFactory, uRouter, sFactory, sRouter, arbitrage } = require('./helpers/initialization')
 
 // -- .ENV VALUES HERE -- //
 const arbFor = process.env.ARB_FOR // This is the address of token we are attempting to arbitrage (WETH)
-const arbAgainst = process.env.ARB_AGAINST // AAVE token1 address
+const arbAgainst = process.env.ARB_AGAINST // token1 address
 const units = process.env.UNITS // Used for price display/reporting
 const difference = process.env.PRICE_DIFFERENCE
 const gasLimit = process.env.GAS_LIMIT
 const gasPrice = process.env.GAS_PRICE // Estimated Gas: 0.008453220000006144 ETH + ~10%
 
-let uPair, sPair, amount
+let uPair, sPair, amount, uRate, sRate
 let isExecuting = false
 
 const main = async () => {
@@ -30,6 +31,12 @@ const main = async () => {
 
   console.log(`qPair Address: ${await uPair.getAddress()}`)
   console.log(`sPair Address: ${await sPair.getAddress()}\n`)
+
+  uRate = await calculatePriceInv(uPair)
+  sRate = await calculatePriceInv(sPair)
+
+  console.log(`QuickSwap Rate\t|\t${Number(uRate).toFixed(10)} ${token0.symbol} / 1 ${token1.symbol}`)
+  console.log(`SushiSwap Rate\t|\t${Number(sRate).toFixed(10)} ${token0.symbol} / 1 ${token1.symbol}\n`)
 
   uPair.on('Swap', async () => {
     if (!isExecuting) {
@@ -155,24 +162,38 @@ const determineProfitability = async (_routerPath, _token0Contract, _token0, _to
   }
 
   console.log(`Reserves on ${await _routerPath[1].getAddress()}`)
-  console.log(`AAVE: ${Number(ethers.formatUnits(reserves[0].toString(), 'ether')).toFixed(4)}`)
-  console.log(`WETH: ${ethers.formatUnits(reserves[1].toString(), 'ether')}\n`)
+  console.log(`${_token1.symbol}: ${Number(ethers.formatUnits(reserves[0].toString(), 'ether')).toFixed(4)}`)
+  console.log(`${_token0.symbol}: ${ethers.formatUnits(reserves[1].toString(), 'ether')}\n`)
 
   try {
+    const input = Big(reserves[0]).times(0.01).toFixed(0)
+    console.log(`path: [${_token0.address},${_token1.address}]`)
+    console.log(`reserves[0]: \t${reserves[0]}`)
+    console.log(`input: \t\t${input} ${typeof input}`)
 
     // This returns the amount of WETH needed
-    let result = await _routerPath[0].getAmountsIn(reserves[0], [_token0.address, _token1.address])
+    let result = await _routerPath[0].getAmountsIn(input, [_token0.address, _token1.address])
 
     const token0In = result[0] // WETH
-    const token1In = result[1] // AAVE
+    const token1In = result[1]
+
+    const losses = await entropy(input, exchangeToBuy === 'Quickswap' ? uRate : sRate, token0In)
+
+    console.log(`The losses using ${ethers.formatUnits(input, 'ether')} ${_token1.symbol} and ${exchangeToBuy === 'Quickswap' ? 'uRate' : 'sRate'} are ${losses} ${_token0.symbol}\n`)
+    console.log(`Exact swap \t${ethers.formatUnits(Big(input).times(exchangeToBuy === 'Quickswap' ? uRate : sRate).toFixed(0), 'ether')}`)
+    console.log(`token0In   \t${ethers.formatUnits(token0In, 'ether')}`)
 
     result = await _routerPath[1].getAmountsOut(token1In, [_token1.address, _token0.address])
 
-    console.log(`Estimated amount of WETH needed to buy enough AAVE on ${exchangeToBuy}\t\t| ${ethers.formatUnits(token0In, 'ether')}`)
-    console.log(`Estimated amount of WETH returned after swapping AAVE on ${exchangeToSell}\t| ${ethers.formatUnits(result[1], 'ether')}\n`)
+    console.log(`Estimated amount of WETH needed to buy enough ${_token1.symbol} on ${exchangeToBuy}\t\t| ${ethers.formatUnits(token0In, 'ether')}`)
+    console.log(`Estimated amount of WETH returned after swapping ${_token1.symbol} on ${exchangeToSell}\t| ${ethers.formatUnits(result[1], 'ether')}\n`)
 
     const { amountIn, amountOut } = await simulate(token0In, _routerPath, _token0, _token1)
+    console.log(`amountIn:  ${amountIn}`)
+    console.log(`amountOut: ${amountOut}`)
+
     const amountDifference = amountOut - amountIn
+    console.log(`amountDifference: ${amountDifference}`)
     const estimatedGasCost = gasLimit * gasPrice
 
     // Fetch account
@@ -255,7 +276,7 @@ const executeTrade = async (_routerPath, _token0Contract, _token1Contract) => {
   const ethBalanceDifference = ethBalanceBefore - ethBalanceAfter
 
   const data = {
-    'MATIC Balance Before': ethers.formatUnits(ethBalanceBefore, 'ether'),
+    'MATIC Balance Before': ethers.formatUnits(ethBalanceBefore, 'ether'), // should be 0
     'MATIC Balance After': ethers.formatUnits(ethBalanceAfter, 'ether'),
     'MATIC Spent (gas)': ethers.formatUnits(ethBalanceDifference.toString(), 'ether'),
     '-': {},

@@ -46,6 +46,17 @@ async function calculatePrice(_pairContract) {
     return Big(x).div(Big(y))
 }
 
+async function calculatePriceInv(_pairContract) {
+    const [x, y] = await getReserves(_pairContract)
+    return Big(y).div(Big(x))
+}
+
+async function entropy(_reserveIn, _rate, _token0In) {
+    const result = new Big(_reserveIn).times(_rate)
+    const losses = ethers.formatUnits(result.minus(_token0In).toFixed(0), 'ether')
+    return losses
+}
+
 async function calculateDifference(_uPrice, _sPrice) {
     return (((_uPrice - _sPrice) / _sPrice) * 100).toFixed(2)
 }
@@ -66,6 +77,8 @@ module.exports = {
     getPairContract,
     getReserves,
     calculatePrice,
+    calculatePriceInv,
+    entropy,
     calculateDifference,
     simulate
 }

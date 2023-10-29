@@ -10,8 +10,8 @@ const { provider, uFactory, uRouter, sFactory, sRouter } = require('../helpers/i
 const V2_FACTORY_TO_USE = uFactory
 const V2_ROUTER_TO_USE = uRouter
 
-const UNLOCKED_ACCOUNT = '0x06959153B974D0D5fDfd87D561db6d8d4FA0bb0B' // AAVE Account to impersonate
-const AMOUNT = '1000' // 250 AAVE (PoS) -- Tokens will automatically be converted to wei
+const UNLOCKED_ACCOUNT = '0x06959153B974D0D5fDfd87D561db6d8d4FA0bb0B' // Account to impersonate
+const AMOUNT = '100' // Tokens will automatically be converted to wei
 
 async function main() {
   const routerAddress = await V2_ROUTER_TO_USE.getAddress();
