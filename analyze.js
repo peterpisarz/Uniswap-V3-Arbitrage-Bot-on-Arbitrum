@@ -36,14 +36,14 @@ const main = async () => {
   console.log(`[${token0.address},${token1.address}]`)
 
   const increment = Big('500000000000000000')
+  let input = Big('1000000000000000000')
 
   const routerPath = [uRouter, sRouter]
 
   for (let i = 0; i < 10; i++) {
-    let input = '1000000000000000000'
 
-    let result = await routerPath[0].getAmountsIn(input, [token0.address, token1.address])
-    let exact = Big(input).times(uRate)
+    let result = await routerPath[0].getAmountsIn(input.toString(), [token0.address, token1.address])
+    let exact = input.times(uRate)
     let diff = exact.minus(result[0])
     let diffpercentage = (exact.minus(result[0])).div(result[0]).times(100).toFixed(2)
 
@@ -53,7 +53,7 @@ const main = async () => {
     console.log(`diff:\t${diff}`)
     console.log(`diff%:\t${diffpercentage}%`)
 
-    // input = Big(input).plus(increment)
+    input = input.plus(increment)
   }
 }
 
