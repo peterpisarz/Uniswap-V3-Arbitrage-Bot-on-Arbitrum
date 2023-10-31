@@ -3,7 +3,7 @@ require('./helpers/server')
 require("dotenv").config();
 
 const fs = require('fs');
-const { createCanvas, loadImage } = require('canvas');
+const { createCanvas } = require('canvas');
 const Chart = require('chart.js/auto');
 const { Big } = require('big.js')
 const ethers = require("ethers")
@@ -38,7 +38,7 @@ const main = async () => {
 
   console.log(`[${token0.address},${token1.address}]`)
 
-  const increment = Big('1000000000000000000')
+  const increment = Big('10000000000000000000')
   let input =       Big('1000000000000000000')
 
   const routerPath = [uRouter, sRouter]
@@ -68,46 +68,54 @@ const main = async () => {
   console.log(`inputValues: ${inputValues}`)
   console.log(`diffValues: ${diffValues}`)
 
-  const csv = dataPoints.map(point => [point.input, point.diff])
-  fs.writeFileSync('data.csv', 'input,diff\n' + csv.map(row => row.join(',')).join('\n'));
+  // Start the Express server and pass the data to it
+  require('./helpers/server')(inputValues, diffValues);
 
-  // Create a new canvas
-  // const canvas = createCanvas(800, 400);
-  // const ctx = canvas.getContext('2d');
+  // Create an HTML canvas element
+  const canvas = createCanvas(800, 400);
 
-  // ctx.fillStyle = 'white';
-  // ctx.fillRect(0, 0, canvas.width, canvas.height);
+  // Create a 2D context for the canvas
+  const ctx = canvas.getContext('2d');
 
-  // // Create a Chart.js chart
-  // const chart = new Chart(ctx, {
-  //   type: 'line',
-  //   data: {
-  //     labels: inputValues,  // Use inputValues as X-axis labels
-  //     datasets: [
-  //       {
-  //         label: 'Difference',
-  //         data: diffValues,  // Use diffValues as Y-axis data
-  //         borderColor: 'rgba(75, 192, 192, 1)',
-  //         fill: false,
-  //       },
-  //     ],
-  //   },
-  //   options: {
-  //     scales: {
-  //       x: {
-  //         type: 'category',
-  //         position: 'bottom',
-  //       },
-  //       y: {
-  //         beginAtZero: true,
-  //       },
-  //     },
-  //   },
-  // });
+  // Create a Chart.js chart
+  new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: inputValues, // X-axis labels
+      datasets: [
+        {
+          label: 'Price Difference',
+          data: diffValues, // Y-axis data
+          borderColor: 'blue', // Line color
+          borderWidth: 2, // Line width
+        },
+      ],
+    },
+    options: {
+      responsive: false, // Make the chart non-responsive
+      maintainAspectRatio: false, // Don't maintain aspect ratio
+      scales: {
+        x: {
+          type: 'linear',
+          position: 'bottom',
+          title: {
+            display: true,
+            text: 'Input Value',
+          },
+        },
+        y: {
+          title: {
+            display: true,
+            text: 'Price Difference',
+          },
+        },
+      },
+    },
+  });
 
-  // // Create an image file
-  // const buffer = canvas.toBuffer('image/png');
-  // fs.writeFileSync('chart.png', buffer);
+  // Save the chart to an image file
+  const chartImage = canvas.toBuffer('image/png');
+  fs.writeFileSync('chart.png', chartImage);
 
 }
 

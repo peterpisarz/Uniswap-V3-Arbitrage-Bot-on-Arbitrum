@@ -10,6 +10,7 @@ const { provider, uFactory, uRouter, sFactory, sRouter, arbitrage } = require('.
 
 // -- .ENV VALUES HERE -- //
 const arbFor = process.env.ARB_FOR // This is the address of token we are attempting to arbitrage (WETH)
+console.log(arbFor)
 const arbAgainst = process.env.ARB_AGAINST // token1 address
 const units = process.env.UNITS // Used for price display/reporting
 const difference = process.env.PRICE_DIFFERENCE

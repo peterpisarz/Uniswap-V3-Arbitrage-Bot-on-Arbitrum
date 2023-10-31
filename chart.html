@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Price Difference Chart</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <div style="width: 80%; margin: 0 auto;">
+    <canvas id="priceChart"></canvas>
+  </div>
+  <script>
+    // JavaScript code to display the chart
+    const canvas = document.getElementById('priceChart').getContext('2d');
+
+    new Chart(canvas, {
+        type: 'line',
+            data: {
+              labels: JSON.parse('INSERT_INPUT_VALUES'), // X-axis labels
+              datasets: [
+                {
+                  label: 'Token0In plotted for various amounts in the getAmountsIn function',
+                  data: JSON.parse('INSERT_DIFF_VALUES'), // Y-axis data
+                  borderColor: 'blue', // Line color
+                  borderWidth: 2, // Line width
+                },
+              ],
+            },
+            options: {
+              scales: {
+                x: {
+                  type: 'linear',
+                  position: 'bottom',
+                  title: {
+                    display: true,
+                    text: 'Input Value (i.e. reserves[0] for getAmountIn)',
+                  },
+                },
+                y: {
+                  reverse: true,
+                  title: {
+                    display: true,
+                    text: 'Price Difference (i.e. the difference between an exact price conversion, and what Uniswap will actually give you)',
+                  },
+                },
+              },
+            },
+          });
+
+  </script>
+</body>
+</html>
