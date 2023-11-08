@@ -1,5 +1,5 @@
 // -- HANDLE INITIAL SETUP -- //
-require('./helpers/server')
+require('./helpers/serverbot.js')
 require("dotenv").config();
 
 const Big = require('big.js')
@@ -10,7 +10,6 @@ const { provider, uFactory, uRouter, sFactory, sRouter, arbitrage } = require('.
 
 // -- .ENV VALUES HERE -- //
 const arbFor = process.env.ARB_FOR // This is the address of token we are attempting to arbitrage (WETH)
-console.log(arbFor)
 const arbAgainst = process.env.ARB_AGAINST // token1 address
 const units = process.env.UNITS // Used for price display/reporting
 const difference = process.env.PRICE_DIFFERENCE
@@ -167,7 +166,7 @@ const determineProfitability = async (_routerPath, _token0Contract, _token0, _to
   console.log(`${_token0.symbol}: ${ethers.formatUnits(reserves[1].toString(), 'ether')}\n`)
 
   try {
-    const input = Big(reserves[0]).times(0.01).toFixed(0)
+    const input = Big(reserves[0]).times(0.001).toFixed(0)
     console.log(`path: [${_token0.address},${_token1.address}]`)
     console.log(`reserves[0]: \t${reserves[0]}`)
     console.log(`input: \t\t${input} ${typeof input}`)
@@ -176,7 +175,8 @@ const determineProfitability = async (_routerPath, _token0Contract, _token0, _to
     let result = await _routerPath[0].getAmountsIn(input, [_token0.address, _token1.address])
 
     const token0In = result[0] // WETH
-    const token1In = result[1]
+    const token1In = result[1] // Link
+    console.log(`token1In: ${token1In}`)
 
     const losses = await entropy(input, exchangeToBuy === 'Quickswap' ? uRate : sRate, token0In)
 

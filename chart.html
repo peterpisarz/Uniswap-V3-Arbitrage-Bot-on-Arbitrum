@@ -3,10 +3,19 @@
 <head>
   <title>Price Difference Chart</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    /* Add margin between the charts */
+    .chart-container {
+      margin-top: 200px; /* Adjust this value as needed */
+    }
+  </style>
 </head>
 <body>
   <div style="width: 80%; margin: 0 auto;">
     <canvas id="priceChart"></canvas>
+  </div>
+  <div style="width: 80%; margin: 0 auto;">
+    <canvas id="priceOutput"></canvas>
   </div>
   <script>
     // JavaScript code to display the chart
@@ -20,6 +29,42 @@
                 {
                   label: 'Token0In plotted for various amounts in the getAmountsIn function',
                   data: JSON.parse('INSERT_DIFF_VALUES'), // Y-axis data
+                  borderColor: 'blue', // Line color
+                  borderWidth: 2, // Line width
+                },
+              ],
+            },
+            options: {
+              scales: {
+                x: {
+                  type: 'linear',
+                  position: 'bottom',
+                  title: {
+                    display: true,
+                    text: 'Input Value (i.e. reserves[0] for getAmountIn)',
+                  },
+                },
+                y: {
+                  reverse: true,
+                  title: {
+                    display: true,
+                    text: 'Price Difference (i.e. the difference between an exact price conversion, and what Uniswap will actually give you)',
+                  },
+                },
+              },
+            },
+          });
+
+    const canvas2 = document.getElementById('priceOutput').getContext('2d');
+
+    new Chart(canvas2, {
+        type: 'line',
+            data: {
+              labels: JSON.parse('INSERT_OUTPUT_VALUES'), // X-axis labels
+              datasets: [
+                {
+                  label: 'Token1In plotted for various amounts in the getAmountsOut function',
+                  data: JSON.parse('INSERT_DIFF2_VALUES'), // Y-axis data
                   borderColor: 'blue', // Line color
                   borderWidth: 2, // Line width
                 },

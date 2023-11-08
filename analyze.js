@@ -3,8 +3,8 @@ require('./helpers/server')
 require("dotenv").config();
 
 const fs = require('fs');
-const { createCanvas } = require('canvas');
-const Chart = require('chart.js/auto');
+const { createCanvas } = require('canvas')
+const Chart = require('chart.js/auto')
 const { Big } = require('big.js')
 const ethers = require("ethers")
 const config = require('./config.json')
@@ -43,6 +43,7 @@ const main = async () => {
 
   const routerPath = [uRouter, sRouter]
   const dataPoints = []
+  const dataPointsOut = []
 
   for (let i = 0; i < 100; i++) {
 
@@ -50,8 +51,13 @@ const main = async () => {
     let exact = input.times(uRate)
     let diff = exact.minus(result[0])
     let diffpercentage = (exact.minus(result[0])).div(result[0]).times(100).toFixed(2)
-
     dataPoints.push({input: input.toString(), diff: diff.toString()})
+
+    let output = await routerPath[1].getAmountsOut(result[1], [token1.address, token0.address])
+    let exact2 = Big(result[1]).times(sRate)
+    let diff2 = Big(output[1]).minus(exact2)
+    let diffpercentage2 = diff2.div(output[1]).times(100).toFixed(2)
+    dataPointsOut.push({output: output[1].toString(), diff2: diff2.toString()})
 
     // console.log(`input:\t${input} ${token1.symbol}`)
     // console.log(`result:\t${result[0]} ${token0.symbol}`)
@@ -64,58 +70,20 @@ const main = async () => {
   // Extract input and diff values into separate arrays
   const inputValues = dataPoints.map(point => point.input);
   const diffValues = dataPoints.map(point => point.diff);
-  console.log(`dataPoints: ${dataPoints}`)
-  console.log(`inputValues: ${inputValues}`)
-  console.log(`diffValues: ${diffValues}`)
+
+  const outputValues = dataPointsOut.map(point => point.output)
+  const diff2Values = dataPointsOut.map(point => point.diff2)
+  console.log(`dataPoints: ${dataPoints}\n`)
+  console.log(`inputValues: ${inputValues}\n`)
+  console.log(`diffValues: ${diffValues}\n`)
+  console.log(`dataPointsOut: ${dataPointsOut}\n`)
+  console.log(`outputValues: ${outputValues}\n`)
+  console.log(`diff2Values: ${diff2Values}\n`)
+  console.log('Visualize Data on:')
+  console.log("http://localhost:5001/chart")
 
   // Start the Express server and pass the data to it
-  require('./helpers/server')(inputValues, diffValues);
-
-  // Create an HTML canvas element
-  const canvas = createCanvas(800, 400);
-
-  // Create a 2D context for the canvas
-  const ctx = canvas.getContext('2d');
-
-  // Create a Chart.js chart
-  new Chart(ctx, {
-    type: 'line',
-    data: {
-      labels: inputValues, // X-axis labels
-      datasets: [
-        {
-          label: 'Price Difference',
-          data: diffValues, // Y-axis data
-          borderColor: 'blue', // Line color
-          borderWidth: 2, // Line width
-        },
-      ],
-    },
-    options: {
-      responsive: false, // Make the chart non-responsive
-      maintainAspectRatio: false, // Don't maintain aspect ratio
-      scales: {
-        x: {
-          type: 'linear',
-          position: 'bottom',
-          title: {
-            display: true,
-            text: 'Input Value',
-          },
-        },
-        y: {
-          title: {
-            display: true,
-            text: 'Price Difference',
-          },
-        },
-      },
-    },
-  });
-
-  // Save the chart to an image file
-  const chartImage = canvas.toBuffer('image/png');
-  fs.writeFileSync('chart.png', chartImage);
+  require('./helpers/server')(inputValues, diffValues, outputValues, diff2Values);
 
 }
 

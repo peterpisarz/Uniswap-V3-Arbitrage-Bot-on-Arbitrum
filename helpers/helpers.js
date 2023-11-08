@@ -63,7 +63,9 @@ async function calculateDifference(_uPrice, _sPrice) {
 
 async function simulate(amount, _routerPath, _token0, _token1) {
     const trade1 = await _routerPath[0].getAmountsOut(amount, [_token0.address, _token1.address])
+    console.log(`simulate trade 1: ${trade1}`)
     const trade2 = await _routerPath[1].getAmountsOut(trade1[1], [_token1.address, _token0.address])
+    console.log(`simulate trade 2: ${trade2}`)
 
     const amountIn = Number(ethers.formatUnits(trade1[0], 'ether'))
     const amountOut = Number(ethers.formatUnits(trade2[1], 'ether'))
