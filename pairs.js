@@ -11,12 +11,12 @@ const { getTokenAndContract, getPairContract, getReserves, calculatePrice, calcu
 const { provider, uFactory, uRouter, sFactory, sRouter, arbitrage } = require('./helpers/initialization')
 
 // -- .ENV VALUES HERE -- //
-const arbFor = process.env.ARB_FOR // This is the address of token we are attempting to arbitrage (WETH)
-const arbAgainst = process.env.ARB_AGAINST // token1 address
-const units = process.env.UNITS // Used for price display/reporting
-const difference = process.env.PRICE_DIFFERENCE
-const gasLimit = process.env.GAS_LIMIT
-const gasPrice = process.env.GAS_PRICE // Estimated Gas: 0.008453220000006144 ETH + ~10%
+// const arbFor = process.env.ARB_FOR // This is the address of token we are attempting to arbitrage (WETH)
+// const arbAgainst = process.env.ARB_AGAINST // token1 address
+// const units = process.env.UNITS // Used for price display/reporting
+// const difference = process.env.PRICE_DIFFERENCE
+// const gasLimit = process.env.GAS_LIMIT
+// const gasPrice = process.env.GAS_PRICE // Estimated Gas: 0.008453220000006144 ETH + ~10%
 
 let uPair, sPair, amount, uRate, sRate
 let isExecuting = false
@@ -36,7 +36,7 @@ const main = async () => {
   } else {
     console.log("Running on Live Net")
   }
-  const { token0Contract, token1Contract, token0, token1 } = await getTokenAndContract(arbFor, arbAgainst, provider)
+  // const { token0Contract, token1Contract, token0, token1 } = await getTokenAndContract(arbFor, arbAgainst, provider)
 
   for (let i = 0; i < tokenAddresses.length; i++) {
     for (let j = i + 1; j < tokenAddresses.length; j++) {
@@ -54,7 +54,6 @@ const main = async () => {
       let sResult = await getPairContract(sFactory, address1, address2, provider)
       let sAddress = await sResult.getAddress()
       if (sAddress !== '0x0000000000000000000000000000000000000000') { sReserves = await getReserves(sResult) } else { sReserves = 0 }
-
 
       let pair_data = {
         uAddress,
@@ -74,16 +73,6 @@ const main = async () => {
   pairs.forEach(pair => {
     console.log(pair);
   })
-
-  // console.log(`qPair Address: ${await uPair.getAddress()}`)
-  // console.log(`sPair Address: ${await sPair.getAddress()}\n`)
-
-  uRate = await calculatePriceInv(uPair)
-  sRate = await calculatePriceInv(sPair)
-
-  console.log(`QuickSwap Rate\t|\t${Number(uRate).toFixed(10)} ${token0.symbol} / 1 ${token1.symbol}`)
-  console.log(`SushiSwap Rate\t|\t${Number(sRate).toFixed(10)} ${token0.symbol} / 1 ${token1.symbol}\n`)
-
 }
 
 main();

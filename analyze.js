@@ -38,8 +38,8 @@ const main = async () => {
 
   console.log(`[${token0.address},${token1.address}]`)
 
-  const increment = Big('10000000000000000000')
-  let input =       Big('1000000000000000000')
+  const increment = Big('10000000000000000000') // 10 WETH
+  let input =       Big('1000000000000000000') // 1 WETH
 
   const routerPath = [uRouter, sRouter]
   const dataPoints = []
@@ -57,7 +57,7 @@ const main = async () => {
     let exact2 = Big(result[1]).times(sRate)
     let diff2 = Big(output[1]).minus(exact2)
     let diffpercentage2 = diff2.div(output[1]).times(100).toFixed(2)
-    dataPointsOut.push({output: output[1].toString(), diff2: diff2.toString()})
+    dataPointsOut.push({output: output[1].toString(), diff2: diff2.toString(), exact: exact.toString()})
 
     // console.log(`input:\t${input} ${token1.symbol}`)
     // console.log(`result:\t${result[0]} ${token0.symbol}`)
@@ -70,6 +70,7 @@ const main = async () => {
   // Extract input and diff values into separate arrays
   const inputValues = dataPoints.map(point => point.input);
   const diffValues = dataPoints.map(point => point.diff);
+  const exactValues = dataPoints.map(point => point.exact);
 
   const outputValues = dataPointsOut.map(point => point.output)
   const diff2Values = dataPointsOut.map(point => point.diff2)
@@ -83,7 +84,7 @@ const main = async () => {
   console.log("http://localhost:5001/chart")
 
   // Start the Express server and pass the data to it
-  require('./helpers/server')(inputValues, diffValues, outputValues, diff2Values);
+  require('./helpers/server')(inputValues, diffValues, outputValues, diff2Values, exactValues);
 
 }
 
