@@ -10,14 +10,6 @@ const config = require('./config.json')
 const { getTokenAndContract, getPairContract, getReserves, calculatePrice, calculatePriceInv, entropy, simulate } = require('./helpers/helpers')
 const { provider, uFactory, uRouter, sFactory, sRouter, arbitrage } = require('./helpers/initialization')
 
-// -- .ENV VALUES HERE -- //
-// const arbFor = process.env.ARB_FOR // This is the address of token we are attempting to arbitrage (WETH)
-// const arbAgainst = process.env.ARB_AGAINST // token1 address
-// const units = process.env.UNITS // Used for price display/reporting
-// const difference = process.env.PRICE_DIFFERENCE
-// const gasLimit = process.env.GAS_LIMIT
-// const gasPrice = process.env.GAS_PRICE // Estimated Gas: 0.008453220000006144 ETH + ~10%
-
 let uPair, sPair, amount, uRate, sRate
 let isExecuting = false
 
@@ -36,7 +28,6 @@ const main = async () => {
   } else {
     console.log("Running on Live Net")
   }
-  // const { token0Contract, token1Contract, token0, token1 } = await getTokenAndContract(arbFor, arbAgainst, provider)
 
   for (let i = 0; i < tokenAddresses.length; i++) {
     for (let j = i + 1; j < tokenAddresses.length; j++) {

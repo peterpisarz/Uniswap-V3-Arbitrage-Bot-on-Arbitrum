@@ -26,15 +26,23 @@ const main = async () => {
   const { token0Contract, token1Contract, token0, token1 } = await getTokenAndContract(arbFor, arbAgainst, provider)
   uPair = await getPairContract(uFactory, token0.address, token1.address, provider)
   sPair = await getPairContract(sFactory, token0.address, token1.address, provider)
+  uReserves = await getReserves(uPair)
+  sReserves = await getReserves(sPair)
 
   console.log(`qPair Address: ${await uPair.getAddress()}`)
   console.log(`sPair Address: ${await sPair.getAddress()}\n`)
 
   uRate = await calculatePriceInv(uPair)
   sRate = await calculatePriceInv(sPair)
+  uPrice = await calculatePrice(uPair)
+  sPrice = await calculatePrice(sPair)
 
   console.log(`QuickSwap Rate\t|\t${Number(uRate).toFixed(10)} ${token0.symbol} / 1 ${token1.symbol}`)
   console.log(`SushiSwap Rate\t|\t${Number(sRate).toFixed(10)} ${token0.symbol} / 1 ${token1.symbol}\n`)
+  console.log(`QuickSwap Price\t|\t${Number(uPrice).toFixed(10)} ${token1.symbol} / 1 ${token0.symbol}`)
+  console.log(`SushiSwap Price\t|\t${Number(sPrice).toFixed(10)} ${token1.symbol} / 1 ${token0.symbol}\n`)
+  console.log(`QuickSwap Reserves\t|\t${uReserves} ${token1.symbol},${token0.symbol}`)
+  console.log(`SushiSwap Reserves\t|\t${sReserves} ${token0.symbol},${token0.symbol}\n`)
 
   console.log(`[${token0.address},${token1.address}]`)
 
@@ -47,14 +55,22 @@ const main = async () => {
 
   for (let i = 0; i < 100; i++) {
 
+    // uniswap trade
+    let sim = await simulate(input.toString(), routerPath, token0, token1)
+
+    // exact conversion
+    let exact = input.times(uPrice)
     let result = await routerPath[0].getAmountsIn(input.toString(), [token0.address, token1.address])
-    let exact = input.times(uRate)
+    let exact2 = exact.div(sPrice)
+    console.log(`simulate exact 1: ${input},${exact.toFixed(0)}`)
+    console.log(`simulate exact 2: ${exact.toFixed(0)},${exact2.toFixed(0)}\n`)
+
     let diff = exact.minus(result[0])
     let diffpercentage = (exact.minus(result[0])).div(result[0]).times(100).toFixed(2)
     dataPoints.push({input: input.toString(), diff: diff.toString()})
 
     let output = await routerPath[1].getAmountsOut(result[1], [token1.address, token0.address])
-    let exact2 = Big(result[1]).times(sRate)
+
     let diff2 = Big(output[1]).minus(exact2)
     let diffpercentage2 = diff2.div(output[1]).times(100).toFixed(2)
     dataPointsOut.push({output: output[1].toString(), diff2: diff2.toString(), exact: exact.toString()})
@@ -74,12 +90,12 @@ const main = async () => {
 
   const outputValues = dataPointsOut.map(point => point.output)
   const diff2Values = dataPointsOut.map(point => point.diff2)
-  console.log(`dataPoints: ${dataPoints}\n`)
-  console.log(`inputValues: ${inputValues}\n`)
-  console.log(`diffValues: ${diffValues}\n`)
-  console.log(`dataPointsOut: ${dataPointsOut}\n`)
-  console.log(`outputValues: ${outputValues}\n`)
-  console.log(`diff2Values: ${diff2Values}\n`)
+  // console.log(`dataPoints: ${dataPoints}\n`)
+  // console.log(`inputValues: ${inputValues}\n`)
+  // console.log(`diffValues: ${diffValues}\n`)
+  // console.log(`dataPointsOut: ${dataPointsOut}\n`)
+  // console.log(`outputValues: ${outputValues}\n`)
+  // console.log(`diff2Values: ${diff2Values}\n`)
   console.log('Visualize Data on:')
   console.log("http://localhost:5001/chart")
 
