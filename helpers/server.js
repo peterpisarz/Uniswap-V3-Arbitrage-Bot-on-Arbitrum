@@ -19,10 +19,9 @@ app.get('/chart', (req, res) => {
   // Inject the data into the HTML
   const updatedHtml = chartHtml
     .replace('INSERT_INPUT_VALUES', JSON.stringify(inputValues))
-    .replace('INSERT_DIFF_VALUES', JSON.stringify(diffValues))
-    .replace('INSERT_OUTPUT_VALUES', JSON.stringify(outputValues))
-    .replace('INSERT_DIFF2_VALUES', JSON.stringify(diff2Values))
     .replace('INSERT_EXACT_VALUES', JSON.stringify(exactValues))
+    .replace('INSERT_SIM1_VALUES', JSON.stringify(simValues))
+    .replace('INSERT_SIM2_VALUES', JSON.stringify(sim2Values))
 
   // Send the updated HTML as the response
   res.send(updatedHtml);
@@ -30,10 +29,10 @@ app.get('/chart', (req, res) => {
 });
 
 // This function is called from analyze.js to pass the data to server.js
-module.exports = (inputValues, diffValues, outputValues, diff2Values, exactValues) => {
+module.exports = (inputValues, exactValues, simValues, sim2Values) => {
   global.inputValues = inputValues; // Make inputValues globally available
-  global.diffValues = diffValues; // Make diffValues globally available
-  global.outputValues = outputValues;
-  global.diff2Values = diff2Values;
   global.exactValues = exactValues;
+  global.simValues = simValues;
+  global.sim2Values = sim2Values;
+
 };

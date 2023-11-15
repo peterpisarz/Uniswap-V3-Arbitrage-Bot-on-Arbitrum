@@ -14,11 +14,9 @@
   <div style="width: 80%; margin: 0 auto;">
     <canvas id="priceChart"></canvas>
   </div>
-  <div style="width: 80%; margin: 0 auto;">
-    <canvas id="priceOutput"></canvas>
-  </div>
   <script>
     // JavaScript code to display the chart
+
     const canvas = document.getElementById('priceChart').getContext('2d');
 
     new Chart(canvas, {
@@ -27,45 +25,21 @@
               labels: JSON.parse('INSERT_INPUT_VALUES'), // X-axis labels
               datasets: [
                 {
-                  label: 'Token0In plotted for various amounts in the getAmountsIn function',
-                  data: JSON.parse('INSERT_DIFF_VALUES'), // Y-axis data
+                  label: 'WETH returned for an exact swap',
+                  data: JSON.parse('INSERT_EXACT_VALUES'), // Y-axis data
                   borderColor: 'blue', // Line color
                   borderWidth: 2, // Line width
                 },
-              ],
-            },
-            options: {
-              scales: {
-                x: {
-                  type: 'linear',
-                  position: 'bottom',
-                  title: {
-                    display: true,
-                    text: 'Input Value (i.e. reserves[0] for getAmountIn)',
-                  },
-                },
-                y: {
-                  reverse: true,
-                  title: {
-                    display: true,
-                    text: 'Price Difference (i.e. the difference between an exact price conversion, and what Uniswap will actually give you)',
-                  },
-                },
-              },
-            },
-          });
-
-    const canvas2 = document.getElementById('priceOutput').getContext('2d');
-
-    new Chart(canvas2, {
-        type: 'line',
-            data: {
-              labels: JSON.parse('INSERT_OUTPUT_VALUES'), // X-axis labels
-              datasets: [
                 {
-                  label: 'Token1In plotted for various amounts in the getAmountsOut function',
-                  data: JSON.parse('INSERT_DIFF2_VALUES'), // Y-axis data
-                  borderColor: 'blue', // Line color
+                  label: 'WETH returned by Uniswap',
+                  data: JSON.parse('INSERT_SIM1_VALUES'), // Y-axis data
+                  borderColor: 'red', // Line color
+                  borderWidth: 2, // Line width
+                },
+                {
+                  label: 'WETH returned by Uniswap w/ Price Diff',
+                  data: JSON.parse('INSERT_SIM2_VALUES'), // Y-axis data
+                  borderColor: 'green', // Line color
                   borderWidth: 2, // Line width
                 },
               ],
@@ -77,20 +51,19 @@
                   position: 'bottom',
                   title: {
                     display: true,
-                    text: 'Input Value (i.e. reserves[0] for getAmountIn)',
+                    text: 'Input Value',
                   },
                 },
                 y: {
-                  reverse: true,
+                  reverse: false,
                   title: {
                     display: true,
-                    text: 'Price Difference (i.e. the difference between an exact price conversion, and what Uniswap will actually give you)',
+                    text: 'Output Value',
                   },
                 },
               },
             },
           });
-
   </script>
 </body>
 </html>

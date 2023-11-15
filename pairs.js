@@ -13,6 +13,8 @@ const { provider, uFactory, uRouter, sFactory, sRouter, arbitrage } = require('.
 let uPair, sPair, amount, uRate, sRate
 let isExecuting = false
 
+const USDTaddress = '0xc2132D05D31c914a87C6611C10748AEb04B58e8F'
+
 const tokenAddresses = [
   '0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619',
   '0xc2132D05D31c914a87C6611C10748AEb04B58e8F',
@@ -31,13 +33,12 @@ const main = async () => {
 
   for (let i = 0; i < tokenAddresses.length; i++) {
     for (let j = i + 1; j < tokenAddresses.length; j++) {
+
       let address1 = tokenAddresses[i]
       let address1Contract = new ethers.Contract(address1, IERC20.abi, provider)
-      // let reserves1 = await getReserves(address1Contract)
       let symbol1 = await address1Contract.symbol()
       let address2 = tokenAddresses[j]
       let address2Contract = new ethers.Contract(address2, IERC20.abi, provider)
-      // let reserves2 = await getReserves(address2Contract)
       let symbol2 = await address2Contract.symbol()
       let uResult = await getPairContract(uFactory, address1, address2, provider)
       let uAddress = await uResult.getAddress()
@@ -45,6 +46,14 @@ const main = async () => {
       let sResult = await getPairContract(sFactory, address1, address2, provider)
       let sAddress = await sResult.getAddress()
       if (sAddress !== '0x0000000000000000000000000000000000000000') { sReserves = await getReserves(sResult) } else { sReserves = 0 }
+
+      // let uResultUSDT = await getPairContract(uFactory, address1, USDTaddress, provider)
+      // console.log(await uResultUSDT.getAddress())
+      // let uPrice = await calculatePrice(uResultUSDT)
+      // console.log(`uPrice: ${uPrice}`)
+      // let sResultUSDT = await getPairContract(sFactory, address1, USDTaddress, provider)
+      // let sPrice = await calculatePrice(sResultUSDT)
+      // console.log(`sPrice: ${sPrice}`)
 
       let pair_data = {
         uAddress,

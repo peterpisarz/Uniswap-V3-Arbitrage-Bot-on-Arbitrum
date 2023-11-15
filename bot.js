@@ -35,8 +35,8 @@ const main = async () => {
   uRate = await calculatePriceInv(uPair)
   sRate = await calculatePriceInv(sPair)
 
-  console.log(`QuickSwap Rate\t|\t${Number(uRate).toFixed(10)} ${token0.symbol} / 1 ${token1.symbol}`)
-  console.log(`SushiSwap Rate\t|\t${Number(sRate).toFixed(10)} ${token0.symbol} / 1 ${token1.symbol}\n`)
+  console.log(`QuickSwap Rate\t|\t${Number(uRate).toFixed(3)} ${token0.symbol} / 1 ${token1.symbol}`)
+  console.log(`SushiSwap Rate\t|\t${Number(sRate).toFixed(3)} ${token0.symbol} / 1 ${token1.symbol}\n`)
 
   uPair.on('Swap', async () => {
     if (!isExecuting) {
@@ -145,7 +145,7 @@ const determineDirection = async (_priceDifference) => {
 }
 
 const determineProfitability = async (_routerPath, _token0Contract, _token0, _token1) => {
-  console.log(`Determining Profitability...\n`)
+  console.log(`Determining Profitability...\n\n`)
 
   // This is where you can customize your conditions on whether a profitable trade is possible...
 
@@ -161,28 +161,25 @@ const determineProfitability = async (_routerPath, _token0Contract, _token0, _to
     exchangeToSell = 'Quickswap'
   }
 
-  console.log(`Reserves on ${await _routerPath[1].getAddress()}`)
+  console.log(`Reserves on ${exchangeToSell} ${exchangeToSell === 'Quickswap' ? await uPair.getAddress() : await sPair.getAddress()}`)
   console.log(`${_token1.symbol}: ${Number(ethers.formatUnits(reserves[0].toString(), 'ether')).toFixed(4)}`)
   console.log(`${_token0.symbol}: ${ethers.formatUnits(reserves[1].toString(), 'ether')}\n`)
 
   try {
-    const input = Big(reserves[0]).times(0.001).toFixed(0)
-    console.log(`path: [${_token0.address},${_token1.address}]`)
-    console.log(`reserves[0]: \t${reserves[0]}`)
-    console.log(`input: \t\t${input} ${typeof input}`)
+    const input = 400000000000000000n //LINK
+    console.log(`path: [${_token0.address},${_token1.address}]\n`)
 
     // This returns the amount of WETH needed
     let result = await _routerPath[0].getAmountsIn(input, [_token0.address, _token1.address])
 
     const token0In = result[0] // WETH
     const token1In = result[1] // Link
-    console.log(`token1In: ${token1In}`)
+    console.log(`input: \t\t${input}`)
+    console.log(`token0In: \t${token0In}\t${ethers.formatUnits(token0In, 18)}\n`)
 
-    const losses = await entropy(input, exchangeToBuy === 'Quickswap' ? uRate : sRate, token0In)
+    const quote = await _routerPath[0].quote(token0In, reserves[1], reserves[0])
+    console.log(quote)
 
-    console.log(`The losses using ${ethers.formatUnits(input, 'ether')} ${_token1.symbol} and ${exchangeToBuy === 'Quickswap' ? 'uRate' : 'sRate'} are ${losses} ${_token0.symbol}\n`)
-    console.log(`Exact swap \t${ethers.formatUnits(Big(input).times(exchangeToBuy === 'Quickswap' ? uRate : sRate).toFixed(0), 'ether')}`)
-    console.log(`token0In   \t${ethers.formatUnits(token0In, 'ether')}`)
 
     result = await _routerPath[1].getAmountsOut(token1In, [_token1.address, _token0.address])
 

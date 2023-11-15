@@ -17,7 +17,7 @@ async function getTokenAndContract(_token0Address, _token1Address, _provider) {
 
     const token1 = {
         address: _token1Address,
-        decimals: 18,
+        decimals: 8,
         symbol: await token1Contract.symbol(),
         name: await token1Contract.name()
     }
@@ -73,6 +73,49 @@ async function simulate(amount, _routerPath, _token0, _token1) {
     return { amountIn, amountOut }
 }
 
+async function simulate2(input, _pairContractA, _pairContractB, percentDiff) {
+    const reservesA = await getReserves(_pairContractA)
+    const reservesB = await getReserves(_pairContractB)
+    console.log(reservesA)
+    console.log(reservesB)
+    reservesA[1] = reservesA[1] * (100n - percentDiff) / 100n
+    console.log(reservesA)
+    console.log(reservesB)
+
+    const trade1 = ((BigInt(input) * 997n) * reservesA[0]) / (reservesA[1] * 1000n + (BigInt(input) * 997n))
+    const trade2 = ((trade1 * 997n) * reservesB[1]) / (reservesB[0] * 1000n + (trade1 * 997n))    
+    console.log(trade1)
+    console.log(trade2)
+
+    return trade2
+
+}
+
+async function calculateInputAmount(X_Uniswap, Y_Uniswap) {
+    // Using the quadratic formula to solve for A
+    X_Uniswap = X_Uniswap * 997
+    Y_Uniswap = Y_Uniswap * 1000
+
+    const a = 1.05 * Y_Uniswap;
+    const b = -(X_Uniswap + 1.05 * X_Uniswap);
+    const c = 0;
+
+    // Calculate the discriminant
+    const discriminant = Math.pow(b, 2) - 4 * a * c;
+
+    if (discriminant < 0) {
+        // No real roots, meaning no solution in this case
+        return "No real solution";
+    } else {
+        // Calculate the roots
+        const root1 = (-b + Math.sqrt(discriminant)) / (2 * a);
+        const root2 = (-b - Math.sqrt(discriminant)) / (2 * a);
+
+        // Return the positive root (input amount can't be negative)
+        return Math.max(root1, root2);
+    }
+}
+
 module.exports = {
     getTokenAndContract,
     getPairAddress,
@@ -82,5 +125,7 @@ module.exports = {
     calculatePriceInv,
     entropy,
     calculateDifference,
-    simulate
+    simulate,
+    calculateInputAmount,
+    simulate2
 }

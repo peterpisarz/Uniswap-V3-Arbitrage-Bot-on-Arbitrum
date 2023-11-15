@@ -8,7 +8,7 @@ const Chart = require('chart.js/auto')
 const { Big } = require('big.js')
 const ethers = require("ethers")
 const config = require('./config.json')
-const { getTokenAndContract, getPairContract, getReserves, calculatePrice, calculatePriceInv, entropy, simulate } = require('./helpers/helpers')
+const { getTokenAndContract, getPairContract, getReserves, calculatePrice, calculatePriceInv, entropy, simulate, simulate2, calculateInputAmount } = require('./helpers/helpers')
 const { provider, uFactory, uRouter, sFactory, sRouter, arbitrage } = require('./helpers/initialization')
 
 // -- .ENV VALUES HERE -- //
@@ -29,6 +29,11 @@ const main = async () => {
   uReserves = await getReserves(uPair)
   sReserves = await getReserves(sPair)
 
+  inputAmount = await calculateInputAmount(Number(uReserves[1]), Number(uReserves[0]))
+  console.log(`uReserves: ${uReserves}`)
+  console.log(`sReserves: ${sReserves}`)
+  console.log(`Ideal Input Amount: ${inputAmount}\n`)
+
   console.log(`qPair Address: ${await uPair.getAddress()}`)
   console.log(`sPair Address: ${await sPair.getAddress()}\n`)
 
@@ -42,65 +47,54 @@ const main = async () => {
   console.log(`QuickSwap Price\t|\t${Number(uPrice).toFixed(10)} ${token1.symbol} / 1 ${token0.symbol}`)
   console.log(`SushiSwap Price\t|\t${Number(sPrice).toFixed(10)} ${token1.symbol} / 1 ${token0.symbol}\n`)
   console.log(`QuickSwap Reserves\t|\t${uReserves} ${token1.symbol},${token0.symbol}`)
-  console.log(`SushiSwap Reserves\t|\t${sReserves} ${token0.symbol},${token0.symbol}\n`)
+  console.log(`SushiSwap Reserves\t|\t${sReserves} ${token0.symbol},${token1.symbol}\n`)
 
   console.log(`[${token0.address},${token1.address}]`)
 
-  const increment = Big('10000000000000000000') // 10 WETH
-  let input =       Big('1000000000000000000') // 1 WETH
+  const increment = Big('100000000000000000') // .1 WETH
+  let input =       Big('100000000000000000') // .1 WETH
 
   const routerPath = [uRouter, sRouter]
   const dataPoints = []
-  const dataPointsOut = []
 
-  for (let i = 0; i < 100; i++) {
+  for (let i = 0; i < 10; i++) {
 
     // uniswap trade
+    console.log(i+1)
     let sim = await simulate(input.toString(), routerPath, token0, token1)
+    let sim2 = await simulate2(input.toString(), uPair, sPair, 3n)
 
     // exact conversion
     let exact = input.times(uPrice)
     let result = await routerPath[0].getAmountsIn(input.toString(), [token0.address, token1.address])
     let exact2 = exact.div(sPrice)
+    console.log(sim)
     console.log(`simulate exact 1: ${input},${exact.toFixed(0)}`)
-    console.log(`simulate exact 2: ${exact.toFixed(0)},${exact2.toFixed(0)}\n`)
+    console.log(`simulate exact 2: ${exact.toFixed(0)},${exact2.toFixed(0)}`)
+    console.log(`{ amountIn: ${ethers.formatUnits(input.toString(), 'ether')}, amountOut: ${ethers.formatUnits(exact2.toFixed(0), 'ether')} }`)
+    console.log(`${sim2 > exact2 ? 'Profit is ' + (sim2 - BigInt(exact2.toFixed(0))) : 'False'}\n`)
 
-    let diff = exact.minus(result[0])
-    let diffpercentage = (exact.minus(result[0])).div(result[0]).times(100).toFixed(2)
-    dataPoints.push({input: input.toString(), diff: diff.toString()})
-
-    let output = await routerPath[1].getAmountsOut(result[1], [token1.address, token0.address])
-
-    let diff2 = Big(output[1]).minus(exact2)
-    let diffpercentage2 = diff2.div(output[1]).times(100).toFixed(2)
-    dataPointsOut.push({output: output[1].toString(), diff2: diff2.toString(), exact: exact.toString()})
-
-    // console.log(`input:\t${input} ${token1.symbol}`)
-    // console.log(`result:\t${result[0]} ${token0.symbol}`)
-    // console.log(`exact:\t${Number(exact).toFixed(0)} ${typeof exact}`)
-    // console.log(`diff:\t${diff}`)
-    // console.log(`diff%:\t${diffpercentage}%`)
+    dataPoints.push({input: ethers.formatUnits(input.toString(), 'ether'), 
+      exact2: ethers.formatUnits(exact2.toFixed(0), 'ether'), 
+      sim: sim.amountOut.toString(),
+      sim2: ethers.formatUnits(sim2, 'ether')})
 
     input = input.plus(increment)
   }
   // Extract input and diff values into separate arrays
   const inputValues = dataPoints.map(point => point.input);
-  const diffValues = dataPoints.map(point => point.diff);
-  const exactValues = dataPoints.map(point => point.exact);
+  const exactValues = dataPoints.map(point => point.exact2);
+  const simValues = dataPoints.map(point => point.sim)
+  const sim2Values= dataPoints.map(point => point.sim2)
 
-  const outputValues = dataPointsOut.map(point => point.output)
-  const diff2Values = dataPointsOut.map(point => point.diff2)
-  // console.log(`dataPoints: ${dataPoints}\n`)
-  // console.log(`inputValues: ${inputValues}\n`)
-  // console.log(`diffValues: ${diffValues}\n`)
-  // console.log(`dataPointsOut: ${dataPointsOut}\n`)
-  // console.log(`outputValues: ${outputValues}\n`)
-  // console.log(`diff2Values: ${diff2Values}\n`)
+  console.log(`inputValues: ${inputValues}\n`)
+  console.log(`simValues: ${simValues}\n`)
+  console.log(`sim2Values: ${sim2Values}\n`)
   console.log('Visualize Data on:')
   console.log("http://localhost:5001/chart")
 
   // Start the Express server and pass the data to it
-  require('./helpers/server')(inputValues, diffValues, outputValues, diff2Values, exactValues);
+  require('./helpers/server')(inputValues, exactValues, simValues, sim2Values);
 
 }
 

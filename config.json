@@ -1,8 +1,8 @@
 {
     "PROJECT_SETTINGS": {
         "isLocal": false,
-        "isDeployed": false,
-        "ARBITRAGE_ADDRESS": "0xb16CA24E16c58f817fe627321a0eeb5f9BeBf23F"
+        "isDeployed": true,
+        "ARBITRAGE_ADDRESS": "0x929B97bf5A5152F2E045ab397B7eA97Fc2C43cae"
     },
     "UNISWAP": {
         "V2_ROUTER_02_ADDRESS": "0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D",

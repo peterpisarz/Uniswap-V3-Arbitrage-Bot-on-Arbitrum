@@ -10,8 +10,8 @@ const { provider, uFactory, uRouter, sFactory, sRouter } = require('../helpers/i
 const V2_FACTORY_TO_USE = uFactory
 const V2_ROUTER_TO_USE = uRouter
 
-const UNLOCKED_ACCOUNT = '0x06959153B974D0D5fDfd87D561db6d8d4FA0bb0B' // Account to impersonate
-const AMOUNT = '100' // Tokens will automatically be converted to wei
+const UNLOCKED_ACCOUNT = '0xA75EDE99F376Dd47f3993Bc77037F61b5737C6EA' // Account to impersonate
+const AMOUNT = '10' // Tokens will automatically be converted to wei
 
 async function main() {
   const routerAddress = await V2_ROUTER_TO_USE.getAddress();
@@ -26,7 +26,7 @@ async function main() {
 
   const balance = await token0Contract.balanceOf(UNLOCKED_ACCOUNT)
   console.log('Balance of token0: ', balance)
-  console.log('Amount  of token0: ', hre.ethers.parseUnits(AMOUNT, 'ether'))
+  console.log('Amount  of token0: ', hre.ethers.parseUnits(AMOUNT, 8))
 
   const pair = await getPairContract(V2_FACTORY_TO_USE, ARB_AGAINST.address, ARB_FOR.address, provider)
   console.log("Pair address: ", pair.target)
