@@ -101,10 +101,14 @@ const determineProfitability = async (_routerPath, _token0Contract, _token0, _to
     reserves = await getReserves(sPair)
     exchangeToBuy = 'Quickswap'
     exchangeToSell = 'Sushiswap'
+    buyReserves = uReserves; // Use Uniswap reserves for buying
+    sellReserves = sReserves; // Use Sushiswap reserves for selling
   } else {
     reserves = await getReserves(uPair)
     exchangeToBuy = 'Sushiswap'
     exchangeToSell = 'Quickswap'
+    buyReserves = sReserves; // Use Sushiswap reserves for buying
+    sellReserves = uReserves; // Use Uniswap reserves for selling
   }
 
   sReserves = await getReserves(sPair)
@@ -118,7 +122,7 @@ const determineProfitability = async (_routerPath, _token0Contract, _token0, _to
   let best = 0n 
   let bestList = {}
 
-  const gas = 20000000000000000n
+  const gas = 24000000000000000n
 
   for (let j = 0; j < 10; j++) {
     let a =      1000000000000000000n
