@@ -26,7 +26,7 @@ async function main() {
 
   const balance = await token0Contract.balanceOf(UNLOCKED_ACCOUNT)
   console.log('Balance of token0: ', balance)
-  console.log('Amount  of token0: ', hre.ethers.parseUnits(AMOUNT, 8))
+  console.log('Amount  of token0: ', hre.ethers.parseUnits(AMOUNT, 18))
 
   const pair = await getPairContract(V2_FACTORY_TO_USE, ARB_AGAINST.address, ARB_FOR.address, provider)
   console.log("Pair address: ", pair.target)

@@ -29,9 +29,6 @@ const main = async () => {
   uPair = await getPairContract(uFactory, token0.address, token1.address, provider)
   sPair = await getPairContract(sFactory, token0.address, token1.address, provider)
 
-  uRate = await calculatePriceInv(uPair)
-  sRate = await calculatePriceInv(sPair)
-
   console.log(`qPair Address: ${await uPair.getAddress()}`)
   console.log(`sPair Address: ${await sPair.getAddress()}\n`)
 
@@ -113,66 +110,49 @@ const determineProfitability = async (_routerPath, _token0Contract, _token0, _to
   console.log(`${await uPair.getAddress()} ${uReserves}`) // [LINK, WETH]
   console.log(`${await sPair.getAddress()} ${sReserves}`) // [LINK, WETH]
 
-  let b, c, exact, profitable, bestdiff, bestamount = 0
-  let priceDiff = 1000n
-  let best = 0n 
-  let bestList = {}
-
+  let b, c, exact, profitable, bestamount = 0
+  let priceDiff = 1058n
+  let best = 0n
+  let a = 10000000000000000n
   const gas = 20000000000000000n
 
-  for (let j = 0; j < 10; j++) {
-    let a =      1000000000000000000n
-    const step = 100000000000000000n
-    for (let i = 0; i < 100; i++) {
+  for (let i = 0; i < 1000; i++) {
 
-      exact = a * uReserves[0]/uReserves[1]
-      b = a * 997n * uReserves[0]/((uReserves[1]*1000n) + (a * 997n))
+    exact = a * uReserves[0]/uReserves[1]
+    b = a * 997n * uReserves[0]/((uReserves[1]*1000n) + (a * 997n))
 
-      exact2 = exact * sReserves[1]/sReserves[0] * priceDiff/1000n
-      c = b * 997n * sReserves[1]/((sReserves[0]*1000n) + (b * 997n)) * priceDiff/1000n
+    exact2 = exact * sReserves[1]/sReserves[0] * priceDiff/1000n
+    c = b * 997n * sReserves[1]/((sReserves[0]*1000n) + (b * 997n)) * priceDiff/1000n
 
-      console.log(`A: ${ethers.formatUnits(a, 'ether')}`)
-      console.log(`Price Difference ${(priceDiff-1000n)/10n}%`)
-      console.log(`B: \t\t${ethers.formatUnits(b, 'ether')}`)
-      console.log(`Exact: \t\t${ethers.formatUnits(exact, 'ether')}`)
-      console.log(`C: \t\t${ethers.formatUnits(c, 'ether')}`)
-      console.log(`Exact2: \t${ethers.formatUnits(exact2, 'ether')}`)
+    console.log(`A: ${ethers.formatUnits(a, 'ether')}`)
+    console.log(`Price Difference ${(priceDiff-1000n)/10n}%`)
+    console.log(`B: \t\t${ethers.formatUnits(b, 'ether')}`)
+    console.log(`Exact: \t\t${ethers.formatUnits(exact, 'ether')}`)
+    console.log(`C: \t\t${ethers.formatUnits(c, 'ether')}`)
+    console.log(`Exact2: \t${ethers.formatUnits(exact2, 'ether')}`)
 
-      if (i===0) {
-        console.log(`Losses at 0%: \t${ethers.formatUnits((a-c), 'ether')}`)
-      }
-
-      profitable = c-a-gas
-
-      if (profitable > best) {
-        best = profitable
-        bestamount = a
-      }
-
-      if (profitable > 0){
-        console.log(`Profitable: \t${ethers.formatUnits(profitable)}\n`)
-      } else {
-        console.log(`No Profit: \t${ethers.formatUnits(profitable)} <<<<<<<<<<<<<<<<<<<<<<<<\n`)
-      }
-
-      a += step
+    if (i===0) {
+      console.log(`Losses at 0%: \t${ethers.formatUnits((a-c), 'ether')}`)
     }
 
-    bestList[priceDiff] = {
-      bestProfit: (ethers.formatUnits(best, 'ether')),
-      bestInput: ethers.formatUnits(bestamount,'ether'),
-      percent: priceDiff
+    profitable = c-a-gas
+
+    if (profitable > best) {
+      best = profitable
+      bestamount = a
     }
 
-  priceDiff+=10n
-  best = 0n
-  bestamount = 0n
+    if (profitable > 0){
+      console.log(`Profitable: \t${ethers.formatUnits(profitable)}\n`)
+    } else {
+      console.log(`No Profit: \t${ethers.formatUnits(profitable)} <<<<<<<<<<<<<<<<<<<<<<<<\n`)
+    }
+
+    a += 1000000000000000n
   }
 
   console.log(`Best: \t${ethers.formatUnits(best, 'ether')}`)
   console.log(`Amount: \t${ethers.formatUnits(bestamount, 'ether')}`)
-  console.log(`%Diff: \t${bestdiff}`)
-  console.log(bestList)
   console.log(`Reserves on ${exchangeToSell} ${exchangeToSell === 'Quickswap' ? await uPair.getAddress() : await sPair.getAddress()}`)
   console.log(`${_token1.symbol}: ${Number(ethers.formatUnits(reserves[0].toString(), 'ether')).toFixed(4)}`)
   console.log(`${_token0.symbol}: ${ethers.formatUnits(reserves[1].toString(), 'ether')}\n`)
