@@ -51,13 +51,13 @@ const main = async () => {
 
   console.log(`[${token0.address},${token1.address}]`)
 
-  const increment = Big('100000000000000000') // .1 WETH
-  let input =       Big('100000000000000000') // .1 WETH
+  const increment = Big('1000000000000000000') // .1 WETH
+  let input =       Big('1000000000000000000') // .1 WETH
 
   const routerPath = [uRouter, sRouter]
   const dataPoints = []
 
-  for (let i = 0; i < 10; i++) {
+  for (let i = 0; i < 100; i++) {
 
     // uniswap trade
     console.log(i+1)

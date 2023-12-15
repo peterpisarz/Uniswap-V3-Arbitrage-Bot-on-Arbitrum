@@ -16,7 +16,7 @@ const difference = process.env.PRICE_DIFFERENCE
 const gasLimit = process.env.GAS_LIMIT
 const gasPrice = process.env.GAS_PRICE // Estimated Gas: 0.008453220000006144 ETH + ~10%
 
-let uPair, sPair, amount, uRate, sRate, input
+let uPair, sPair, amount, uRate, sRate
 let isExecuting = false
 
 const main = async () => {
@@ -25,7 +25,6 @@ const main = async () => {
   } else {
     console.log("Running on Live Net")
   }
-
   const { token0Contract, token1Contract, token0, token1 } = await getTokenAndContract(arbFor, arbAgainst, provider)
   uPair = await getPairContract(uFactory, token0.address, token1.address, provider)
   sPair = await getPairContract(sFactory, token0.address, token1.address, provider)
@@ -53,17 +52,7 @@ const main = async () => {
         return
       }
 
-      input = await iterateAmountIn(routerPath, priceDifference)
-
-      if (input <= 0) {
-        input = 100000000000000000n
-        // console.log(`No Arbitrage Currently Available - Input Less Than Zero\n`)
-        // console.log(`-----------------------------------------\n`)
-        // isExecuting = false
-        // return
-      }
-
-      const isProfitable = await determineProfitability(routerPath, token0Contract, token0, token1, input)
+      const isProfitable = await determineProfitability(routerPath, token0Contract, token0, token1)
 
       if (!isProfitable) {
         console.log(`No Arbitrage Currently Available\n`)
@@ -92,17 +81,7 @@ const main = async () => {
         return
       }
 
-      input = await iterateAmountIn(routerPath, priceDifference)
-
-      if (input <= 0) {
-        input = 100000000000000000n // if Zero, use default value .1 MATIC
-        // console.log(`No Arbitrage Currently Available - Input Less Than Zero\n`)
-        // console.log(`-----------------------------------------\n`)
-        // isExecuting = false
-        // return
-      }
-
-      const isProfitable = await determineProfitability(routerPath, token0Contract, token0, token1, input)
+      const isProfitable = await determineProfitability(routerPath, token0Contract, token0, token1)
 
       if (!isProfitable) {
         console.log(`No Arbitrage Currently Available\n`)
@@ -130,8 +109,8 @@ const checkPrice = async (_exchange, _token0, _token1) => {
   const uPrice = await calculatePrice(uPair)
   const sPrice = await calculatePrice(sPair)
 
-  const uFPrice = Number(uPrice).toFixed(20)
-  const sFPrice = Number(sPrice).toFixed(20)
+  const uFPrice = Number(uPrice).toFixed(units)
+  const sFPrice = Number(sPrice).toFixed(units)
   const priceDifference = (((uFPrice - sFPrice) / sFPrice) * 100).toFixed(2)
 
   console.log(`Current Block: ${currentBlock}`)
@@ -139,6 +118,8 @@ const checkPrice = async (_exchange, _token0, _token1) => {
   console.log(`QUICKSWAP   | ${_token1.symbol}/${_token0.symbol}\t | ${uFPrice}`)
   console.log(`SUSHISWAP | ${_token1.symbol}/${_token0.symbol}\t | ${sFPrice}\n`)
   console.log(`Percentage Difference: ${priceDifference}%\n`)
+
+  
 
   return priceDifference
 }
@@ -165,47 +146,7 @@ const determineDirection = async (_priceDifference) => {
   }
 }
 
-const iterateAmountIn = async (_routerPath, _priceDifference) => {
-  let a =      100000000000000000n // .1Matic
-  const step = 100000000000000000n // .1Matic
-  let profitable, bestAmount = 0n, uReserves, sReserves
-  let best = 0n
-
-  sReserves = await getReserves(sPair)
-  uReserves = await getReserves(uPair)
-
-  if (await _routerPath[0].getAddress() == await uRouter.getAddress()) {
-    reserves = await getReserves(sPair)
-    buyReserves = uReserves; // Use Uniswap reserves for buying
-    sellReserves = sReserves; // Use Sushiswap reserves for selling
-  } else {
-    reserves = await getReserves(uPair)
-    buyReserves = sReserves; // Use Sushiswap reserves for buying
-    sellReserves = uReserves; // Use Uniswap reserves for selling
-  }
-
-  for (let i = 0; i < 100; i++) {
-    b = a * 997n * buyReserves[0] / ((buyReserves[1] * 1000n) + (a * 997n));
-
-    c = b * 997n * sellReserves[1] / ((sellReserves[0] * 1000n) + (b * 997n))
-
-    profitable = c-a-(10000000000000000n) // output - input - gas
-
-    if (profitable > best) {
-      best = profitable
-      bestAmount = a
-    }
-
-    a += step
-  }
-
-console.log(`The ideal input to profit ${ethers.formatUnits(best, 'ether')} is ${ethers.formatUnits(bestAmount, 'ether')} at ${_priceDifference}%\n`)
-amount = bestAmount
-return bestAmount
-
-}
-
-const determineProfitability = async (_routerPath, _token0Contract, _token0, _token1, input) => {
+const determineProfitability = async (_routerPath, _token0Contract, _token0, _token1) => {
   console.log(`Determining Profitability...\n\n`)
 
   // This is where you can customize your conditions on whether a profitable trade is possible...
@@ -223,27 +164,31 @@ const determineProfitability = async (_routerPath, _token0Contract, _token0, _to
   }
 
   console.log(`Reserves on ${exchangeToSell} ${exchangeToSell === 'Quickswap' ? await uPair.getAddress() : await sPair.getAddress()}`)
-  console.log(`${_token1.symbol}: ${Number(ethers.formatUnits(reserves[0].toString(), 8)).toFixed(8)}`)
+  console.log(`${_token1.symbol}: ${Number(ethers.formatUnits(reserves[0].toString(), 'ether')).toFixed(4)}`)
   console.log(`${_token0.symbol}: ${ethers.formatUnits(reserves[1].toString(), 'ether')}\n`)
 
   try {
+    const input = 400000000000000000n //LINK
     console.log(`path: [${_token0.address},${_token1.address}]\n`)
 
     // This returns the amount of WETH needed
-    let result = await _routerPath[0].getAmountsOut(input, [_token0.address, _token1.address])
+    let result = await _routerPath[0].getAmountsIn(input, [_token0.address, _token1.address])
 
     const token0In = result[0] // WETH
     const token1In = result[1] // Link
+    console.log(`input: \t\t${input}`)
+    console.log(`token0In: \t${token0In}\t${ethers.formatUnits(token0In, 18)}\n`)
 
     const quote = await _routerPath[0].quote(token0In, reserves[1], reserves[0])
-    console.log(`Quote: ${quote}`)
+    console.log(quote)
+
 
     result = await _routerPath[1].getAmountsOut(token1In, [_token1.address, _token0.address])
 
     console.log(`Estimated amount of WETH needed to buy enough ${_token1.symbol} on ${exchangeToBuy}\t\t| ${ethers.formatUnits(token0In, 'ether')}`)
     console.log(`Estimated amount of WETH returned after swapping ${_token1.symbol} on ${exchangeToSell}\t| ${ethers.formatUnits(result[1], 'ether')}\n`)
 
-    const { amountIn, amountOut } = await simulate(input, _routerPath, _token0, _token1)
+    const { amountIn, amountOut } = await simulate(token0In, _routerPath, _token0, _token1)
     console.log(`amountIn:  ${amountIn}`)
     console.log(`amountOut: ${amountOut}`)
 
@@ -280,7 +225,7 @@ const determineProfitability = async (_routerPath, _token0Contract, _token0, _to
       return false
     }
 
-    // amount = token0In
+    amount = token0In
     return true
 
   } catch (error) {
@@ -308,7 +253,6 @@ const executeTrade = async (_routerPath, _token0Contract, _token1Contract) => {
   // Fetch token balances before
   const tokenBalanceBefore = await _token0Contract.balanceOf(account.address)
   const ethBalanceBefore = await provider.getBalance(account.address)
-  console.log(`Executing with ${ethers.formatUnits(amount, 'ether')} as input`)
 
   if (config.PROJECT_SETTINGS.isDeployed) {
     const transaction = await arbitrage.connect(account).executeTrade(

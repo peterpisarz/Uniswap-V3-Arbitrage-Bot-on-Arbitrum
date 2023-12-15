@@ -19,7 +19,7 @@ async function main() {
 
   await arbitrage.waitForDeployment()
 
-  console.log(`Arbitrage contract deployed to ${await arbitrage.getAddress()}`)
+  console.log(`Arbitrage contract deployed to ${await arbitrage.getAddress()} on ${hre.network}`)
 }
 
 // We recommend this pattern to be able to use async/await everywhere

@@ -3,11 +3,12 @@ const { expect } = require("chai")
 const config = require("../config.json")
 
 describe("Arbitrage", () => {
-  let owner
-  let arbitrage
+  let owner, arbitrage, signer
+  const arbFor = process.env.ARB_FOR // This is the address of token we are attempting to arbitrage (WETH)
+  const arbAgainst = process.env.ARB_AGAINST // token1 address
 
   beforeEach(async () => {
-    [owner] = await ethers.getSigners()
+    [owner, signer] = await ethers.getSigners()
 
     arbitrage = await hre.ethers.deployContract(
       "Arbitrage",
@@ -34,6 +35,24 @@ describe("Arbitrage", () => {
     })
   })
 
+  describe("Estimate Gas", async () => {
+    const params = {
+      startOnUniswap: true,
+      token0: arbFor,
+      token1: arbAgainst,
+      flashAmount: ethers.formatUnits("1", 18),
+    };
+
+    const estimatedGas = await arbitrage.connect(signer).estimateGas.executeTrade(
+      params.startOnUniswap,
+      params.token0,
+      params.token1,
+      params.flashAmount
+    );
+
+    console.log(`Estimated Gas: ${estimatedGas.toString()}`);
+  })
+
   describe("Trading", () => {
 
     /**
@@ -41,4 +60,5 @@ describe("Arbitrage", () => {
      */
 
   })
+
 })

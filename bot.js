@@ -19,6 +19,29 @@ const gasPrice = process.env.GAS_PRICE // Estimated Gas: 0.008453220000006144 ET
 let uPair, sPair, amount, uRate, sRate
 let isExecuting = false
 
+// Get gas price
+setInterval(async () => {
+  try {
+    const newGasPrice = await provider.getGasPrice();
+    gasPrice = newGasPrice.toString();
+    console.log(`Updated Gas Price: ${ethers.utils.formatUnits(gasPrice, 'gwei')} gwei`);
+  } catch (error) {
+    console.error(`Error fetching gas price: ${error}`);
+  }
+}, 10000);
+
+// Estimate gasLimit for a specific transaction (example)
+const estimateGasLimit = async () => {
+  // Assuming 'transaction' is an object representing your transaction
+  try {
+    const estimatedGasLimit = await provider.estimateGas(transaction);
+    console.log(`Estimated Gas Limit: ${estimatedGasLimit}`);
+    return estimatedGasLimit;
+  } catch (error) {
+    console.error(`Error estimating gas limit: ${error}`);
+  }
+};
+
 const main = async () => {
   if (config.PROJECT_SETTINGS.isLocal) {
     console.log("Running on Localhost")

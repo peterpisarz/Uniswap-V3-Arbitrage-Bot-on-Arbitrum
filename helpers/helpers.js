@@ -17,7 +17,7 @@ async function getTokenAndContract(_token0Address, _token1Address, _provider) {
 
     const token1 = {
         address: _token1Address,
-        decimals: 18,
+        decimals: 8,
         symbol: await token1Contract.symbol(),
         name: await token1Contract.name()
     }
@@ -48,7 +48,7 @@ async function calculatePrice(_pairContract) {
 
 async function calculatePriceInv(_pairContract) {
     const [x, y] = await getReserves(_pairContract)
-    return Big(y).div(Big(x))
+    return Big(y).div(Big(x)) // FOR WBTC * 10000000000n conversion i.e. +10 decimals
 }
 
 async function entropy(_reserveIn, _rate, _token0In) {
