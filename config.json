@@ -1,8 +1,8 @@
 {
     "PROJECT_SETTINGS": {
-        "isLocal": false,
+        "isLocal": true,
         "isDeployed": true,
-        "ARBITRAGE_ADDRESS": "0x929B97bf5A5152F2E045ab397B7eA97Fc2C43cae"
+        "ARBITRAGE_ADDRESS": "0x39A41BAaf5cED9245a22fEA1b349D1E658992216"
     },
     "UNISWAP": {
         "V2_ROUTER_02_ADDRESS": "0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D",
@@ -22,7 +22,7 @@
     },
     "SUSHISWAPV3": {
         "V3_ROUTER_02_ADDRESS": "0x8A21F6768C1f8075791D08546Dadf6daA0bE820c",
-        "FACTORY_ADDRESS": "0xaa26771d497814E81D305c511Efbb3ceD90BF5bd"
+        "FACTORY_ADDRESS": "0x1af415a1EbA07a4986a52B6f2e7dE7003D82231e"
     }
 }
  

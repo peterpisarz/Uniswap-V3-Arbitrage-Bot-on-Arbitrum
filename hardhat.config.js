@@ -9,17 +9,17 @@ module.exports = {
   networks: {
     hardhat: {
       forking: {
-        url: `https://polygon-mainnet.g.alchemy.com/v2/${process.env.ALCHEMY_API_POLY}`
+        url: `https://arb-mainnet.g.alchemy.com/v2/${process.env.ALCHEMY_API_ARBITRUM}`
       }
     },
     mainnet: {
       url: `https://eth-mainnet.g.alchemy.com/v2/${process.env.ALCHEMY_API_KEY}`,
       accounts: [process.env.PRIVATE_KEY],
-    },
-    polygon: {
-      url: `https://polygon-mainnet.g.alchemy.com/v2/${process.env.ALCHEMY_API_POLY}`,
-      accounts: [process.env.PRIVATE_KEY],
     }
+    // polygon: {
+    //   url: `https://polygon-mainnet.g.alchemy.com/v2/${process.env.ALCHEMY_API_POLY}`,
+    //   accounts: [process.env.PRIVATE_KEY],
+    // }
     // arbitrum: {
     //   url: `https://arb-mainnet.g.alchemy.com/v2/${process.env.ALCHEMY_API_ARBITRUM}`,
     //   accounts: [process.env.PRIVATE_KEY],

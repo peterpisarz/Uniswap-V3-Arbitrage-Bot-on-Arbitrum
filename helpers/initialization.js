@@ -22,11 +22,15 @@ const sRouter = new hre.ethers.Contract(config.SUSHISWAPV3.V3_ROUTER_02_ADDRESS,
 const IArbitrage = require('../artifacts/contracts/Arbitrage.sol/Arbitrage.json')
 const arbitrage = new hre.ethers.Contract(config.PROJECT_SETTINGS.ARBITRAGE_ADDRESS, IArbitrage.abi, provider)
 
+const IArbitrageV3 = require('../artifacts/contracts/ArbitrageV3.sol/ArbitrageV3.json')
+const arbitrageV3 = new hre.ethers.Contract(config.PROJECT_SETTINGS.ARBITRAGE_ADDRESS, IArbitrageV3.abi, provider)
+
 module.exports = {
   provider,
   uFactory,
   uRouter,
   sFactory,
   sRouter,
-  arbitrage
+  arbitrage,
+  arbitrageV3
 }

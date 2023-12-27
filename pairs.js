@@ -43,10 +43,10 @@ const main = async () => {
       let symbol2 = await address2Contract.symbol()
       let uResult = await getPairContract(uFactory, address1, address2, provider)
       let uAddress = await uResult.getAddress()
-      if (uAddress !== '0x0000000000000000000000000000000000000000') { uReserves = await getReserves(uResult) } else { uReserves = 0 }
+      if (uAddress !== '0x0000000000000000000000000000000000000000') { uReserves = await address1Contract.balanceOf(uResult) } else { uReserves = 0 }
       let sResult = await getPairContract(sFactory, address1, address2, provider)
       let sAddress = await sResult.getAddress()
-      if (sAddress !== '0x0000000000000000000000000000000000000000') { sReserves = await getReserves(sResult) } else { sReserves = 0 }
+      if (sAddress !== '0x0000000000000000000000000000000000000000') { sReserves = await address1Contract.balanceOf(sResult) } else { sReserves = 0 }
 
       // let uResultUSDT = await getPairContract(uFactory, address1, USDTaddress, provider)
       // console.log(await uResultUSDT.getAddress())

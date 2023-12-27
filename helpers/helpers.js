@@ -1,7 +1,7 @@
 const ethers = require("ethers")
 const Big = require('big.js')
 
-const IUniswapV2Pair = require("@uniswap/v2-core/build/IUniswapV2Pair.json")
+const IUniswapV2Pair = require("@uniswap/v3-core/artifacts/contracts/UniswapV3Pool.sol/UniswapV3Pool.json")
 const IERC20 = require('@openzeppelin/contracts/build/contracts/ERC20.json')
 
 async function getTokenAndContract(_token0Address, _token1Address, _provider) {
@@ -17,7 +17,7 @@ async function getTokenAndContract(_token0Address, _token1Address, _provider) {
 
     const token1 = {
         address: _token1Address,
-        decimals: 8,
+        decimals: 18,
         symbol: await token1Contract.symbol(),
         name: await token1Contract.name()
     }
@@ -25,8 +25,9 @@ async function getTokenAndContract(_token0Address, _token1Address, _provider) {
     return { token0Contract, token1Contract, token0, token1 }
 }
 
+// v2 getPair >>> v3 getPool adding fee
 async function getPairAddress(_V2Factory, _token0, _token1) {
-    const pairAddress = await _V2Factory.getPair(_token0, _token1)
+    const pairAddress = await _V2Factory.getPool(_token0, _token1, 3000)
     return pairAddress
 }
 
@@ -36,9 +37,13 @@ async function getPairContract(_V2Factory, _token0, _token1, _provider) {
     return pairContract
 }
 
-async function getReserves(_pairContract) {
-    const reserves = await _pairContract.getReserves()
-    return [reserves.reserve0, reserves.reserve1]
+// New for V3
+async function getV3Price(_V2Factory, _token0, _token1, _provider) {
+    const poolContract = await getPairContract(_V2Factory, _token0, _token1, _provider)
+    const slot0 = await poolContract.slot0()
+    const sqrtPriceX96= slot0.sqrtPriceX96
+    const price = new Big(sqrtPriceX96.toString()).pow(2).div(new Big(2).pow(192));
+    return price
 }
 
 async function calculatePrice(_pairContract) {
@@ -91,28 +96,29 @@ async function simulate2(input, _pairContractA, _pairContractB, percentDiff) {
 
 }
 
-async function calculateInputAmount(X_Uniswap, Y_Uniswap) {
-    // Using the quadratic formula to solve for A
-    X_Uniswap = X_Uniswap * 997
-    Y_Uniswap = Y_Uniswap * 1000
+async function getQuote(_quoterContract, _tokenIn, _tokenOut, _amountIn, _fee) {
+    const params = {
+        tokenIn: _tokenIn,
+        tokenOut: _tokenOut,
+        fee: _fee,
+        amountIn: _amountIn,
+        sqrtPriceLimitX96: 0
+    }
 
-    const a = 1.05 * Y_Uniswap;
-    const b = -(X_Uniswap + 1.05 * X_Uniswap);
-    const c = 0;
-
-    // Calculate the discriminant
-    const discriminant = Math.pow(b, 2) - 4 * a * c;
-
-    if (discriminant < 0) {
-        // No real roots, meaning no solution in this case
-        return "No real solution";
-    } else {
-        // Calculate the roots
-        const root1 = (-b + Math.sqrt(discriminant)) / (2 * a);
-        const root2 = (-b - Math.sqrt(discriminant)) / (2 * a);
-
-        // Return the positive root (input amount can't be negative)
-        return Math.max(root1, root2);
+    try {
+        const result = await _quoterContract.quoteExactInputSingle.staticCall(params);
+        console.log(result)
+        // console.log(`Amount Out: \t${ethers.formatEther(result.amountOut)}`)
+        // console.log(`Price After: \t${result.sqrtPriceX96After}`)
+        // console.log(`Tick After: \t${result.tickAfter}`)
+        // console.log(`Gas Estimate: \t${result.gasEstimate}`)
+        
+        // Destructure the returned values
+        const [amountOut, sqrtPriceX96After, tickAfter, gasEstimate] = result;
+        return {amountOut, sqrtPriceX96After, tickAfter, gasEstimate}
+    } catch (error) {
+        console.error('Error getting quote:', error);
+        throw error
     }
 }
 
@@ -120,12 +126,12 @@ module.exports = {
     getTokenAndContract,
     getPairAddress,
     getPairContract,
-    getReserves,
     calculatePrice,
     calculatePriceInv,
     entropy,
     calculateDifference,
     simulate,
-    calculateInputAmount,
-    simulate2
+    simulate2,
+    getV3Price,
+    getQuote
 }
