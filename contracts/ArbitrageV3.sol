@@ -107,8 +107,6 @@ contract ArbitrageV3 is IFlashLoanRecipient {
         uint256 _amountIn,
         uint256 _amountOut
     ) internal {
-        TransferHelper.safeTransferFrom(_path[0], msg.sender, address(this), _amountIn);
-
         TransferHelper.safeApprove(_path[0], address(uRouter), _amountIn);
 
         uint160 priceLimit = 0;
@@ -132,8 +130,6 @@ contract ArbitrageV3 is IFlashLoanRecipient {
         uint256 _amountIn,
         uint256 _amountOut
     ) internal {
-        TransferHelper.safeTransferFrom(_path[0], msg.sender, address(this), _amountIn);
-
         TransferHelper.safeApprove(_path[0], address(sRouter), _amountIn);
 
         uint160 priceLimit = 0;

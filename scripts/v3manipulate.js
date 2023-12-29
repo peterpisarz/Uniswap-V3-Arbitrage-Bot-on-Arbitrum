@@ -12,7 +12,7 @@ const V3_FACTORY_TO_USE = uFactory
 const V3_ROUTER_TO_USE = uRouter
 
 const UNLOCKED_ACCOUNT = '0xF977814e90dA44bFA03b6295A0616a897441aceC' // << ARB Arbitrum Account
-const AMOUNT = '180000' // Tokens will automatically be converted to wei
+const AMOUNT = '100000' // Tokens will automatically be converted to wei
 
 // Initialize transfer helper contract
 // const transferHelper = new ethers.Contract()
@@ -36,12 +36,12 @@ async function main() {
   console.log("\nPair address: ", pair.target)
 
   // Fetch price before we execute the swap
-  const priceBefore = await getV3Price(uFactory, ARB_FOR.address, ARB_AGAINST.address, provider)
+  const priceBefore = await getV3Price(V3_FACTORY_TO_USE, ARB_FOR.address, ARB_AGAINST.address, provider)
 
   await manipulatePrice([ARB_AGAINST, ARB_FOR], token0Contract)
 
   // Fetch price after the swap
-  const priceAfter = await getV3Price(uFactory, ARB_FOR.address, ARB_AGAINST.address, provider)
+  const priceAfter = await getV3Price(V3_FACTORY_TO_USE, ARB_FOR.address, ARB_AGAINST.address, provider)
 
   const data = {
     'Price Before': `1 WETH = ${Number(priceBefore)} ${ARB_AGAINST.symbol}`,
@@ -70,7 +70,7 @@ async function manipulatePrice(_path, _token0Contract) {
   console.log("Signer: ", signer.address)
 
   // Approve the Swap
-  const approval = await _token0Contract.connect(signer).approve(V3_ROUTER_TO_USE, amount, { gasLimit: 110000 })
+  const approval = await _token0Contract.connect(signer).approve(V3_ROUTER_TO_USE, amount, { gasLimit: 150000 })
   await approval.wait()
 
   // Set Parameters for the Swap

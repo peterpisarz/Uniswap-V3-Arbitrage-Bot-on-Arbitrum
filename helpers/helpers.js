@@ -107,7 +107,7 @@ async function getQuote(_quoterContract, _tokenIn, _tokenOut, _amountIn, _fee) {
 
     try {
         const result = await _quoterContract.quoteExactInputSingle.staticCall(params);
-        console.log(result)
+        // console.log(result)
         // console.log(`Amount Out: \t${ethers.formatEther(result.amountOut)}`)
         // console.log(`Price After: \t${result.sqrtPriceX96After}`)
         // console.log(`Tick After: \t${result.tickAfter}`)
