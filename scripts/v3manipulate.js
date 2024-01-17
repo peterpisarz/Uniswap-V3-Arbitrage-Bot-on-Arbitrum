@@ -8,8 +8,8 @@ const { getTokenAndContract, getPairContract, calculatePrice, getV3Price } = req
 const { provider, uFactory, uRouter, sFactory, sRouter } = require('../helpers/initialization.js')
 
 // -- CONFIGURE VALUES HERE -- //
-const V3_FACTORY_TO_USE = uFactory
-const V3_ROUTER_TO_USE = uRouter
+const V3_FACTORY_TO_USE = sFactory
+const V3_ROUTER_TO_USE = sRouter
 
 const UNLOCKED_ACCOUNT = '0xF977814e90dA44bFA03b6295A0616a897441aceC' // << ARB Arbitrum Account
 const AMOUNT = '100000' // Tokens will automatically be converted to wei

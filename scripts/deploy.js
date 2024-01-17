@@ -17,9 +17,12 @@ async function main() {
     ]
   )
 
-  await arbitrage.waitForDeployment()
+  const tx = await arbitrage.waitForDeployment()
 
   console.log(`Arbitrage V3 contract deployed to ${await arbitrage.getAddress()} on ${hre.network.name}`)
+
+  console.log(`\nTransaction Receipt:`)
+  console.log(tx)
 }
 
 // We recommend this pattern to be able to use async/await everywhere

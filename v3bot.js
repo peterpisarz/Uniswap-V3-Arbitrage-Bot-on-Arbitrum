@@ -13,7 +13,7 @@ const config = require('./config.json')
 const { getTokenAndContract, getPairContract, getV3Price, getQuote } = require('./helpers/helpers')
 const { provider, uFactory, uRouter, sFactory, sRouter, arbitrage, arbitrageV3 } = require('./helpers/initialization')
 
-let uPair, sPair, amount, uRate, sRate, price, uPrice, sPrice
+let uPair, sPair, amount, uRate, sRate, price, uPrice, sPrice, attempts=0, success=0
 let isExecuting = false
 
 // -- .ENV VALUES HERE -- //
@@ -21,7 +21,7 @@ const arbFor = process.env.ARB_FOR // This is the address of token we are attemp
 const arbAgainst = process.env.ARB_AGAINST // token1 address
 const units = process.env.UNITS // Used for price display/reporting
 const difference = process.env.PRICE_DIFFERENCE
-const gasLimit = process.env.GAS_LIMIT
+const gasLimit = 1600000 // process.env.GAS_LIMIT
 const gasPrice = process.env.GAS_PRICE // Estimated Gas: 0.008453220000006144 ETH + ~10%
 
 const main = async () => {
@@ -57,6 +57,7 @@ const main = async () => {
   uPair.on('Swap', async () => {
     if (!isExecuting) {
       isExecuting = true
+      attempts+=1
       console.log("A Swap Event has occurred on Uniswap. Getting quote...")
       let result = await quoteSwap()
       if (result.profitable) {
@@ -78,12 +79,13 @@ const main = async () => {
             result.startOnUni,
             token0.address,
             token1.address,
-            result.bestAmount
-            // { gasLimit: process.env.GAS_LIMIT }
+            result.bestAmount,
+            { gasLimit: gasLimit }
           )
 
           const receipt = await tx.wait()
-          console.log(`type: ${receipt.type} ${receipt.type == 2 ? console.log("Execute Trade Success") : console.log("Execute trade Failed")}`)
+          success+=1
+          console.log(`type: ${receipt.type} ${(receipt.type == 2) ? console.log("Execute Trade Success") : console.log("Execute trade Failed")}`)
         }
         const tokenBalanceAfter = await token0Contract.balanceOf(signer.address)
         const ethBalanceAfter = await provider.getBalance(signer.address)
@@ -106,13 +108,14 @@ const main = async () => {
         console.table(data)
       }
       isExecuting = false
-      console.log(`Is Executing: ${isExecuting} \nWaiting for next Swap Event...\n`)
+      console.log(`Is Executing: ${isExecuting} \nAttempts: ${success}/${attempts}\nWaiting for next Swap Event...\n`)
     }
   })
 
   sPair.on('Swap', async () => {
     if (!isExecuting) {
       isExecuting = true
+      attempts+=1
       console.log("A Swap Event has occurred on Uniswap. Getting quote...")
       let result = await quoteSwap()
       if (result.profitable) {
@@ -133,11 +136,13 @@ const main = async () => {
             result.startOnUni,
             token0.address,
             token1.address,
-            result.bestAmount
-            // { gasLimit: process.env.GAS_LIMIT }
+            result.bestAmount,
+            { gasLimit: gasLimit }
           )
 
           const receipt = await tx.wait()
+          success+=1
+          console.log(`type: ${receipt.type} ${(receipt.type == 2) ? console.log("Execute Trade Success") : console.log("Execute trade Failed")}`)
         }
         const tokenBalanceAfter = await token0Contract.balanceOf(signer.address)
         const ethBalanceAfter = await provider.getBalance(signer.address)
@@ -160,7 +165,7 @@ const main = async () => {
         console.table(data)
       }
       isExecuting = false
-      console.log(`Is Executing: ${isExecuting} \nWaiting for next Swap Event...`)
+      console.log(`Is Executing: ${isExecuting} \nAttempts: ${success}/${attempts}\nWaiting for next Swap Event...\n`)
     }
   })
 
@@ -191,10 +196,10 @@ const main = async () => {
     }
 
     const fee = 3000
-    let amountIn = 1000000000000000000n
+    let amountIn = 100000000000000000n
 
     // Loop through a series of amountIns to find the most profitable
-    for (let i=0; i<10; i++) {
+    for (let i=0; i<20; i++) {
       console.log(`----------------------------i=${i} -------- amountIn=${amountIn} (${ethers.formatEther(amountIn)})----------------------------`)
       let quote1 = await getQuote(exchangeA, arbFor, arbAgainst, amountIn, fee)
       let quote2 = await getQuote(exchangeB, arbAgainst, arbFor, quote1.amountOut, fee)
@@ -205,7 +210,7 @@ const main = async () => {
         bestAmount = amountIn
         console.log(`New Profit: ${profit} <<<<<<<<<<<<<<<<<<<<<<<<<<<`)
       }
-      amountIn+=1000000000000000000n
+      amountIn+=100000000000000000n
     }
     console.log(`\nBest: ${best}\n`)
 
