@@ -46,15 +46,16 @@ async function getV3Price(_V2Factory, _token0, _token1, _provider) {
     return price
 }
 
-async function calculatePrice(_pairContract) {
-    const [x, y] = await getReserves(_pairContract)
-    return Big(x).div(Big(y))
-}
+// Commented out for V3
+// async function calculatePrice(_pairContract) {
+//     const [x, y] = await getReserves(_pairContract)
+//     return Big(x).div(Big(y))
+// }
 
-async function calculatePriceInv(_pairContract) {
-    const [x, y] = await getReserves(_pairContract)
-    return Big(y).div(Big(x)) // FOR WBTC * 10000000000n conversion i.e. +10 decimals
-}
+// async function calculatePriceInv(_pairContract) {
+//     const [x, y] = await getReserves(_pairContract)
+//     return Big(y).div(Big(x)) // FOR WBTC * 10000000000n conversion i.e. +10 decimals
+// }
 
 async function entropy(_reserveIn, _rate, _token0In) {
     const result = new Big(_reserveIn).times(_rate)
@@ -66,35 +67,37 @@ async function calculateDifference(_uPrice, _sPrice) {
     return (((_uPrice - _sPrice) / _sPrice) * 100).toFixed(2)
 }
 
-async function simulate(amount, _routerPath, _token0, _token1) {
-    const trade1 = await _routerPath[0].getAmountsOut(amount, [_token0.address, _token1.address])
-    console.log(`simulate trade 1: ${trade1}`)
-    const trade2 = await _routerPath[1].getAmountsOut(trade1[1], [_token1.address, _token0.address])
-    console.log(`simulate trade 2: ${trade2}`)
+// Commented out for V3
+// async function simulate(amount, _routerPath, _token0, _token1) {
+//     const trade1 = await _routerPath[0].getAmountsOut(amount, [_token0.address, _token1.address])
+//     console.log(`simulate trade 1: ${trade1}`)
+//     const trade2 = await _routerPath[1].getAmountsOut(trade1[1], [_token1.address, _token0.address])
+//     console.log(`simulate trade 2: ${trade2}`)
 
-    const amountIn = Number(ethers.formatUnits(trade1[0], 'ether'))
-    const amountOut = Number(ethers.formatUnits(trade2[1], 'ether'))
+//     const amountIn = Number(ethers.formatUnits(trade1[0], 'ether'))
+//     const amountOut = Number(ethers.formatUnits(trade2[1], 'ether'))
 
-    return { amountIn, amountOut }
-}
+//     return { amountIn, amountOut }
+// }
 
-async function simulate2(input, _pairContractA, _pairContractB, percentDiff) {
-    const reservesA = await getReserves(_pairContractA)
-    const reservesB = await getReserves(_pairContractB)
-    console.log(reservesA)
-    console.log(reservesB)
-    reservesA[1] = reservesA[1] * (100n - percentDiff) / 100n
-    console.log(reservesA)
-    console.log(reservesB)
+// Commented out for V3
+// async function simulate2(input, _pairContractA, _pairContractB, percentDiff) {
+//     const reservesA = await getReserves(_pairContractA)
+//     const reservesB = await getReserves(_pairContractB)
+//     console.log(reservesA)
+//     console.log(reservesB)
+//     reservesA[1] = reservesA[1] * (100n - percentDiff) / 100n
+//     console.log(reservesA)
+//     console.log(reservesB)
 
-    const trade1 = ((BigInt(input) * 997n) * reservesA[0]) / (reservesA[1] * 1000n + (BigInt(input) * 997n))
-    const trade2 = ((trade1 * 997n) * reservesB[1]) / (reservesB[0] * 1000n + (trade1 * 997n))    
-    console.log(trade1)
-    console.log(trade2)
+//     const trade1 = ((BigInt(input) * 997n) * reservesA[0]) / (reservesA[1] * 1000n + (BigInt(input) * 997n))
+//     const trade2 = ((trade1 * 997n) * reservesB[1]) / (reservesB[0] * 1000n + (trade1 * 997n))    
+//     console.log(trade1)
+//     console.log(trade2)
 
-    return trade2
+//     return trade2
 
-}
+// }
 
 async function getQuote(_quoterContract, _tokenIn, _tokenOut, _amountIn, _fee) {
     const params = {
@@ -126,12 +129,12 @@ module.exports = {
     getTokenAndContract,
     getPairAddress,
     getPairContract,
-    calculatePrice,
-    calculatePriceInv,
+    // calculatePrice,
+    // calculatePriceInv,
     entropy,
     calculateDifference,
-    simulate,
-    simulate2,
+    // simulate,
+    // simulate2,
     getV3Price,
     getQuote
 }
